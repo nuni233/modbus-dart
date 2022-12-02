@@ -26,10 +26,16 @@ class TcpConnector extends ModbusConnector {
   TcpConnector(this._address, this._port, this._mode, {this.timeout});
 
   @override
-  Future<void> connect() async {
-    _socket = await Socket.connect(_address, _port, timeout: this.timeout);
-    _socket!.listen(_onData,
-        onError: onError, onDone: onClose, cancelOnError: true);
+  Future<dynamic> connect() async {
+    try {
+      _socket = await Socket.connect(_address, _port, timeout: this.timeout);
+      _socket!.listen(_onData,
+          onError: onError, onDone: onClose, cancelOnError: true);
+      return 1;
+    } on SocketException {
+      log.finer('NOAH connecting ');
+      return -1;
+    }
   }
 
   @override
@@ -46,9 +52,10 @@ class TcpConnector extends ModbusConnector {
   void _onData(List<int> tcpData) {
     if (_mode == ModbusMode.ascii) tcpData = AsciiConverter.fromAscii(tcpData);
 
-    tcpBuffer = tcpBuffer + tcpData; //add new data to any data already in buffer
+    tcpBuffer =
+        tcpBuffer + tcpData; //add new data to any data already in buffer
     log.finest('RECV: ' + dumpHexToString(tcpBuffer));
-    while( tcpBuffer.length > 8) {
+    while (tcpBuffer.length > 8) {
       var view = ByteData.view(Uint8List.fromList(tcpBuffer).buffer);
       int tid = view.getUint16(0); // ignore: unused_local_variable
       int len = view.getUint16(4);
@@ -65,7 +72,6 @@ class TcpConnector extends ModbusConnector {
         // not enough bytes in buffer - wait and hope that remaining data is in next TCP frame
         break;
       }
-
     }
   }
 
