@@ -30,7 +30,7 @@ class ModbusClientImpl extends ModbusClient {
   }
 
   @override
-  Future<void> connect() {
+  Future<dynamic> connect() {
     return _connector.connect();
   }
 

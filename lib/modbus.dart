@@ -50,7 +50,7 @@ enum ModbusMode { rtu, ascii }
 
 /// MODBUS client
 abstract class ModbusClient {
-  Future<void> connect();
+  Future<dynamic> connect();
 
   Future<void> close();
 
